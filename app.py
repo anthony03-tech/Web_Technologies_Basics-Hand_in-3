@@ -48,11 +48,6 @@ def homePage():
     return redirect(url_for("login"))
 
 
-@app.route("/account")
-def account():
-    return render_template("SecondPage_account.html")
-
-
 @app.route("/createAccount", methods=["GET", "POST"])
 def createAccount():
     error = ""
@@ -98,6 +93,29 @@ def createAccount():
             error = "User already exists"
 
     return render_template("createAccount.html", error=error)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = ""
+
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        with engine.connect() as conn:
+            query = sa.select(user_table).where(
+                user_table.c.username == username
+            )
+            user = conn.execute(query).fetchone()
+
+        if user and check_password_hash(user.password, password):
+            session["user_id"] = user.id
+            return redirect(url_for("account"))
+        else:
+            error = "Invalide username or password"
+
+    return render_template("login.html", error=error)
 
 # @app.route("/account/<int:user_id>")
 # def get_user(user_id):
