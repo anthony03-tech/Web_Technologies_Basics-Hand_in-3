@@ -142,7 +142,21 @@ def forgotPassword():
 
 @app.route("/settings")
 def settings():
-    return render_template("ThirdPage_Settings.html")
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    with engine.connect() as conn:
+        query = (
+            sa.select(settings_table.c.reminders,
+                      settings_table.c.alerts, settings_table.c.darkMode, settings_table.c.textSize, settings_table.c.language, settings_table.c.pinUrgantTask, settings_table.c.autoHideTask, settings_table.c.sortBy)
+            .join(settings_table, user_table.c.id == settings_table.c.user_id)
+            .where(user_table.c.id == user_id)
+        )
+
+        result = conn.execute(query).fetchone()
+    return render_template("settings.html", reminders=result.reminders, alerts=result.alerts, darkMode=result.darkMode, textSize=result.textSize, language=result.language, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask, sortBy=result.sortBy)
 
 
 app.run(debug=True)
