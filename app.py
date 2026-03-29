@@ -152,6 +152,35 @@ def account():
         result = conn.execute(query).fetchone()
     return render_template("account.html", username=result.username, email=result.email, reminders=result.reminders, darkMode=result.darkMode, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask)
 
+
+ALLOWED_KEYS = {"reminders", "darkMode", "pinUrgantTask", "autoHideTask"}
+
+
+@app.route("/account/toggle", methods=["PATCH"])
+def toggle_setting():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    data = request.get_json()
+    key = data.get("key")
+    value = data.get("value")
+
+    # Block anything not in the allowed list
+    if key not in ALLOWED_KEYS:
+        return jsonify({"error": "Invalid setting"}), 400
+
+    user_id = session["user_id"]
+
+    with engine.connect() as conn:
+        conn.execute(
+            settings_table.update()
+            .where(settings_table.c.user_id == user_id)
+            .values(**{key: value})
+        )
+        conn.commit()
+
+    return jsonify({"key": key, "value": value})
+
 # @app.route("/account/<int:user_id>")
 # def get_user(user_id):
 #     user = users.get(user_id)
