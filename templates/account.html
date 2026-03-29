@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css-SecondPage.css') }}">
+  <title>Account</title>
+</head>
+
+<body>
+  <div class="container">
+    <nav>
+      <a href="/to-do-list">Tasks</a>
+      <a href="/account" class="active">Account</a>
+      <a href="/settings">Settings</a>
+      <a href="/logout">Logout</a>
+    </nav>
+
+    <!-- <div>
+      <button id="user-1" class="active" onclick="loadUser(1)">
+        User Profil 1
+      </button>
+      <button id="user-2" onclick="loadUser(2)">User Profil 2</button>
+      <button id="user-3" onclick="loadUser(3)">User Profil 3</button>
+    </div> -->
+
+    <h1>Profile</h1>
+
+    <!-- Profile -->
+    <p class="section-label">Profile</p>
+    <div class="card">
+      <div class="profile">
+        <div class="avatar" id="avatar"></div>
+        <div class="profile-info">
+          <p class="profile-name" id="profile-name">{{ username }}</p>
+          <p class="profile-email" id="profile-email">
+            alex.martin@email.com
+          </p>
+        </div>
+        <a href="#" class="edit-btn">Edit</a>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <p class="section-label">Activity</p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <p class="stat-number">24</p>
+        <p class="stat-label">Total</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-number green">15</p>
+        <p class="stat-label">Completed</p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-number red">9</p>
+        <p class="stat-label">Remaining</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 10px">
+      <div class="progress-header">
+        <span>Completion rate</span>
+        <span class="progress-pct">62%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill"></div>
+      </div>
+      <p class="progress-sub">15 of 24 tasks done this month</p>
+    </div>
+
+    <!-- Settings -->
+    <p class="section-label">Preferences</p>
+    <div class="settings-list">
+      <div class="setting-row">
+        <span class="setting-icon">🔔</span>
+        <span class="setting-name">Daily reminders</span>
+        <label class="toggle">
+          <input type="checkbox" checked>
+          <span class="toggle-track">{{reminders}}</span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">🌙</span>
+        <span class="setting-name">Dark mode</span>
+        <label class="toggle">
+          <input type="checkbox">
+          <span class="toggle-track">{{darkMode}}</span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">📌</span>
+        <span class="setting-name">Pin urgent tasks</span>
+        <label class="toggle">
+          <input type="checkbox" checked>
+          <span class="toggle-track">{{pinUrgantTask}}</span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">✅</span>
+        <span class="setting-name">Auto-hide completed</span>
+        <label class="toggle">
+          <input type="checkbox">
+          <span class="toggle-track">{{autoHideTask}}</span>
+          <span class="toggle-thumb"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-icon">🗑️</span>
+        <span class="setting-name danger">Delete account</span>
+        <a href="#" class="edit-btn" style="color: #e74c3c; border-color: #e74c3c">Delete</a>
+      </div>
+    </div>
+
+    <p class="footer-note">— your data is yours —</p>
+  </div>
+  <script>
+    async function loadUser(id) {
+      try {
+        const res = await fetch(`/account/${id}`);
+        const data = await res.json();
+
+        document.getElementById("profile-name").textContent = data.name;
+        document.getElementById("profile-email").textContent = data.email;
+        document.getElementById("avatar").textContent = data.avatar;
+        document.getElementById("profile-since").textContent = data.member;
+
+        document
+          .querySelectorAll("button")
+          .forEach((btn) => btn.classList.remove("active"));
+        document.getElementById(`user-${id}`).classList.add("active");
+      } catch (err) {
+        alert("Failed to load user: " + err.message);
+      }
+    }
+  </script>
+</body>
+
+</html>
