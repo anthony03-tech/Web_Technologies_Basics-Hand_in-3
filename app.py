@@ -188,7 +188,7 @@ def toggle_setting_account():
 #     return jsonify({"id": user_id, **user})
 
 
-ALLOWED_KEYS_SETTINGS = {"reminders", "extraAlert",
+ALLOWED_KEYS_SETTINGS = {"reminders", "alerts",
                          "darkMode", "pinUrgantTask", "autoHideTask"}
 
 
