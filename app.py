@@ -153,11 +153,12 @@ def account():
     return render_template("account.html", username=result.username, email=result.email, reminders=result.reminders, darkMode=result.darkMode, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask)
 
 
-ALLOWED_KEYS = {"reminders", "darkMode", "pinUrgantTask", "autoHideTask"}
+ALLOWED_KEYS_ACCOUNT = {"reminders",
+                        "darkMode", "pinUrgantTask", "autoHideTask"}
 
 
 @app.route("/account/toggle", methods=["PATCH"])
-def toggle_setting():
+def toggle_setting_account():
     if "user_id" not in session:
         return jsonify({"error": "Not logged in"}), 401
 
@@ -166,7 +167,7 @@ def toggle_setting():
     value = data.get("value")
 
     # Block anything not in the allowed list
-    if key not in ALLOWED_KEYS:
+    if key not in ALLOWED_KEYS_ACCOUNT:
         return jsonify({"error": "Invalid setting"}), 400
 
     user_id = session["user_id"]
@@ -187,6 +188,10 @@ def toggle_setting():
 #     return jsonify({"id": user_id, **user})
 
 
+ALLOWED_KEYS_SETTINGS = {"reminders", "extraAlert",
+                         "darkMode", "pinUrgantTask", "autoHideTask"}
+
+
 @app.route("/settings")
 def settings():
     if "user_id" not in session:
@@ -204,6 +209,32 @@ def settings():
 
         result = conn.execute(query).fetchone()
     return render_template("settings.html", reminders=result.reminders, alerts=result.alerts, darkMode=result.darkMode, textSize=result.textSize, language=result.language, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask, sortBy=result.sortBy)
+
+
+@app.route("/settings/toggle", methods=["PATCH"])
+def toggle_setting():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    data = request.get_json()
+    key = data.get("key")
+    value = data.get("value")
+
+    # Block anything not in the allowed list
+    if key not in ALLOWED_KEYS_SETTINGS:
+        return jsonify({"error": "Invalid setting"}), 400
+
+    user_id = session["user_id"]
+
+    with engine.connect() as conn:
+        conn.execute(
+            settings_table.update()
+            .where(settings_table.c.user_id == user_id)
+            .values(**{key: value})
+        )
+        conn.commit()
+
+    return jsonify({"key": key, "value": value})
 
 
 app.run(debug=True)
