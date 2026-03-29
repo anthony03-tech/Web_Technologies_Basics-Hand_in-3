@@ -45,13 +45,59 @@ metadata.create_all(engine)
 
 @app.route("/")
 def homePage():
-    return render_template("FirstPage_To-do-list.html")
+    return redirect(url_for("login"))
 
 
 @app.route("/account")
 def account():
     return render_template("SecondPage_account.html")
 
+
+@app.route("/createAccount", methods=["GET", "POST"])
+def createAccount():
+    error = ""
+
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        email = request.form["email"]
+
+        hashed_pw = generate_password_hash(password)
+
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(
+                    user_table.insert().values(
+                        username=username,
+                        password=hashed_pw,
+                        email=email
+                    )
+                )
+
+                user_id = result.inserted_primary_key[0]
+
+                conn.execute(
+                    settings_table.insert().values(
+                        user_id=user_id,
+                        reminders=True,
+                        alerts=True,
+                        darkMode=False,
+                        textSize="M",
+                        language="English",
+                        pinUrgantTask=True,
+                        autoHideTask=False,
+                        sortBy="By Date"
+                    )
+                )
+
+                conn.commit()
+
+            return redirect(url_for("login"))
+
+        except Exception:
+            error = "User already exists"
+
+    return render_template("createAccount.html", error=error)
 
 # @app.route("/account/<int:user_id>")
 # def get_user(user_id):
