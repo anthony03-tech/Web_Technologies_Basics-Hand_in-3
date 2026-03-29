@@ -134,6 +134,24 @@ def forgotPassword():
     return render_template("forgotPassword.html")
 
 
+@app.route("/account")
+def account():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    user_id = session["user_id"]
+
+    with engine.connect() as conn:
+        query = (
+            sa.select(user_table.c.username, settings_table.c.reminders, settings_table.c.darkMode,
+                      settings_table.c.pinUrgantTask, settings_table.c.autoHideTask)
+            .join(settings_table, user_table.c.id == settings_table.c.user_id)
+            .where(user_table.c.id == user_id)
+        )
+
+        result = conn.execute(query).fetchone()
+    return render_template("account.html", username=result.username, reminders=result.reminders, darkMode=result.darkMode, pinUrgantTask=result.pinUrgantTask, autoHideTask=result.autoHideTask)
+
 # @app.route("/account/<int:user_id>")
 # def get_user(user_id):
 #     user = users.get(user_id)
