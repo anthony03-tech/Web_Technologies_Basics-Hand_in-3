@@ -16,6 +16,12 @@
       <a href="/settings">Settings</a>
       <a href="/logout">Logout</a>
     </nav>
+    <div id="toast" style="
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(8px);
+  background: #222; color: #fff; font-size: 13px; padding: 8px 18px;
+  border-radius: 40px; opacity: 0; transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none; white-space: nowrap; z-index: 100;
+"></div>
 
     <!-- <div>
       <button id="user-1" class="active" onclick="loadUser(1)">
@@ -75,8 +81,8 @@
         <span class="setting-icon">🔔</span>
         <span class="setting-name">Daily reminders</span>
         <label class="toggle">
-          <input type="checkbox" checked>
-          <span class="toggle-track">{{reminders}}</span>
+          <input type="checkbox" data-key="reminders" {% if reminders %}checked{% endif %}>
+          <span class="toggle-track"></span>
           <span class="toggle-thumb"></span>
         </label>
       </div>
@@ -85,8 +91,8 @@
         <span class="setting-icon">🌙</span>
         <span class="setting-name">Dark mode</span>
         <label class="toggle">
-          <input type="checkbox">
-          <span class="toggle-track">{{darkMode}}</span>
+          <input type="checkbox" data-key="darkMode" {% if darkMode %}checked{% endif %}>
+          <span class="toggle-track"></span>
           <span class="toggle-thumb"></span>
         </label>
       </div>
@@ -95,8 +101,8 @@
         <span class="setting-icon">📌</span>
         <span class="setting-name">Pin urgent tasks</span>
         <label class="toggle">
-          <input type="checkbox" checked>
-          <span class="toggle-track">{{pinUrgantTask}}</span>
+          <input type="checkbox" data-key="pinUrgantTask" {% if pinUrgantTask %}checked{% endif %}>
+          <span class="toggle-track"></span>
           <span class="toggle-thumb"></span>
         </label>
       </div>
@@ -105,8 +111,8 @@
         <span class="setting-icon">✅</span>
         <span class="setting-name">Auto-hide completed</span>
         <label class="toggle">
-          <input type="checkbox">
-          <span class="toggle-track">{{autoHideTask}}</span>
+          <input type="checkbox" data-key="autoHideTask" {% if autoHideTask %}checked{% endif %}>
+          <span class="toggle-track"></span>
           <span class="toggle-thumb"></span>
         </label>
       </div>
@@ -139,6 +145,59 @@
         alert("Failed to load user: " + err.message);
       }
     }
+  </script>
+  <script>
+    let toastTimer;
+
+    function showToast(msg, isError = false) {
+      const toastElement = document.getElementById("toast");
+      toastElement.textContent = msg;
+      toastElement.style.background = isError ? "#e74c3c" : "#222";
+      toastElement.style.opacity = "1";
+      toastElement.style.transform = "translateX(-50%) translateY(0)";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastElement.style.opacity = "0";
+        toastElement.style.transform = "translateX(-50%) translateY(8px)";
+      }, 2000);
+    }
+
+    document.querySelectorAll(".toggle input[data-key]").forEach(input => {
+      input.addEventListener("change", async function () {
+        const key = this.dataset.key;
+        const value = this.checked;
+        const label = this.closest(".setting-row").querySelector(".setting-name").textContent;
+
+        // Disable toggle while saving
+        this.disabled = true;
+
+        try {
+          const res = await fetch("/account/toggle", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              key: key,
+              value: value
+            })
+          });
+
+          if (!res.ok) throw new Error();
+
+          const data = await res.json();
+          this.checked = data.value;
+          showToast((data.value ? "Enabled" : "Disabled") + ": " + label);
+
+        } catch {
+          // Revert on failure
+          this.checked = !value;
+          showToast("Failed to save — try again", true);
+        } finally {
+          this.disabled = false;
+        }
+      });
+    });
   </script>
 </body>
 
