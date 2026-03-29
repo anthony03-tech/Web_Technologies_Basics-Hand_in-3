@@ -117,6 +117,23 @@ def login():
 
     return render_template("login.html", error=error)
 
+
+@app.route("/to-do-list")
+def toDoList():
+    return render_template("to-do-list.html")
+
+
+@app.route("/logout")
+def logout():
+    session.pop("user_id", None)
+    return redirect(url_for("login"))
+
+
+@app.route("/forgotPassword")
+def forgotPassword():
+    return render_template("forgotPassword.html")
+
+
 # @app.route("/account/<int:user_id>")
 # def get_user(user_id):
 #     user = users.get(user_id)
