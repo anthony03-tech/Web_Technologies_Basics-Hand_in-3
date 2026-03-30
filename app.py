@@ -243,13 +243,7 @@ def saveAcc():
     if "user_id" not in session:
         return jsonify({"error": "Not logged in"})
 
-    with engine.connect() as conn:
-        query = (
-            sa.select(user_table.c.id)
-        )
-
-        result = conn.execute(query).fetchone()
-        user_id = result.id
+    user_id = session.get("user_id")
 
     data = request.json
     email = data.get("newEmail")
