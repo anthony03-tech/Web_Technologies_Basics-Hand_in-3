@@ -260,4 +260,28 @@ def saveAcc():
     return jsonify({'status': 'success'})
 
 
+@app.route("/deleteAcc")
+def deleteAcc():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"})
+
+    user_id = session.get("user_id")
+
+    with engine.connect() as conn:
+        conn.execute(
+            user_table.delete()
+            .where(user_table.c.id == user_id)
+        )
+        conn.commit()
+
+    with engine.connect() as conn:
+        conn.execute(
+            settings_table.delete()
+            .where(settings_table.c.user_id == user_id)
+        )
+        conn.commit()
+
+    return redirect(url_for("login"))
+
+
 app.run(debug=True)
