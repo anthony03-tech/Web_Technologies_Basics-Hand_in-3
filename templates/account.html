@@ -38,11 +38,18 @@
     <div class="card">
       <div class="profile">
         <div class="avatar" id="avatar"></div>
-        <div class="profile-info">
+        <div class="profile-info" id="id_profil_info_save">
           <p class="profile-name" id="profile-name">{{ username }}</p>
           <p class="profile-email" id="profile-email">{{email}}</p>
         </div>
-        <a href="#" class="edit-btn">Edit</a>
+        <div class="profile-info" id="id_profil_info_edit" style="display: none;">
+          <form action="#" method="POST">
+            <input type="text" name="profile-name" value="{{ username }}"><br>
+            <input type="email" name="profile-email" value="{{email}}">
+          </form>
+        </div>
+        <button onclick="saveAccount()" class="edit-btn" id="id_save_acc" style="display: none;">Save</button>
+        <button onclick="editAccount()" class="edit-btn" id="id_edit_acc">Edit</button>
       </div>
     </div>
 
@@ -198,6 +205,41 @@
         }
       });
     });
+
+    function editAccount() {
+      document.getElementById("id_profil_info_save").classList.add("hide");
+      document.getElementById("id_profil_info_edit").style.display = "block";
+
+      document.getElementById("id_edit_acc").classList.add("hide");
+      document.getElementById("id_save_acc").style.display = "block";
+    };
+
+    function saveAccount() {
+      document.getElementById("id_profil_info_save").classList.remove("hide");
+      document.getElementById("id_profil_info_edit").style.display = "none";
+
+      document.getElementById("id_edit_acc").classList.remove("hide");
+      document.getElementById("id_save_acc").style.display = "none";
+
+
+      let newEmail = document.getElementsByName("profile-email")[0].value;
+      let newUsername = document.getElementsByName("profile-name")[0].value;
+
+      fetch("/account/edit", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": 'application/json'
+          },
+          body: JSON.stringify({
+            newEmail: newEmail,
+            newUsername: newUsername
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          location.reload();
+        })
+    }
   </script>
 </body>
 
