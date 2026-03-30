@@ -11,6 +11,7 @@ app.secret_key = "super-secret-key"
 #     3: {"name": "Clara Osei",    "email": "clara@example.com"},
 # }
 
+# python -m sqlite3 users.db
 # Database
 engine = sa.create_engine("sqlite:///users.db", echo=True)
 metadata = sa.MetaData()
@@ -111,7 +112,7 @@ def login():
 
         if user and check_password_hash(user.password, password):
             session["user_id"] = user.id
-            return redirect(url_for("account"))
+            return redirect(url_for("toDoList"))
         else:
             error = "Invalide username or password"
 
@@ -214,7 +215,7 @@ def settings():
 @app.route("/settings/toggle", methods=["PATCH"])
 def toggle_setting():
     if "user_id" not in session:
-        return jsonify({"error": "Not logged in"}), 401
+        return jsonify({"error": "Not logged in"})
 
     data = request.get_json()
     key = data.get("key")
@@ -222,7 +223,7 @@ def toggle_setting():
 
     # Block anything not in the allowed list
     if key not in ALLOWED_KEYS_SETTINGS:
-        return jsonify({"error": "Invalid setting"}), 400
+        return jsonify({"error": "Invalid setting"})
 
     user_id = session["user_id"]
 
@@ -235,6 +236,34 @@ def toggle_setting():
         conn.commit()
 
     return jsonify({"key": key, "value": value})
+
+
+@app.route("/account/edit", methods=["PATCH"])
+def saveAcc():
+    if "user_id" not in session:
+        return jsonify({"error": "Not logged in"})
+
+    with engine.connect() as conn:
+        query = (
+            sa.select(user_table.c.id)
+        )
+
+        result = conn.execute(query).fetchone()
+        user_id = result.id
+
+    data = request.json
+    email = data.get("newEmail")
+    username = data.get("newUsername")
+
+    with engine.connect() as conn:
+        conn.execute(
+            user_table.update()
+            .where(user_table.c.id == user_id)
+            .values(email=email, username=username)
+        )
+        conn.commit()
+
+    return jsonify({'status': 'success'})
 
 
 app.run(debug=True)
