@@ -7,5 +7,4 @@ Adding and deleting Task is still under preparations and will be available for f
 
 "Text size", "Language", "Default sort", "Change password" and "Export my data" buttons on the setting page and the "forgot password" page are coming soon for the final version.
 
-if you lanch it on your device to test it here is a test user: username -> test
-                                                               password -> 123
+if you lanch it on your device to test it here is a test user: username -> test / password -> 123
